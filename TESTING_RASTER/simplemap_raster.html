@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Suitability Range Control</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
+<style>
+  body { margin: 0; padding: 0; }
+  #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+  #slider { position: absolute; bottom: 30px; left: 10px; z-index: 1; background: white; padding: 10px; border-radius: 5px; }
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+<div id="slider">
+  <label for="greenRangeSlider">Green Intensity: </label>
+  <input id="greenRangeSlider" type="range" min="0" max="100" step="1" value="50">
+</div>
+
+<script>
+  mapboxgl.accessToken = 'pk.eyJ1IjoiZ2xvYmFsd2VibWFwcGVyIiwiYSI6ImNsY3pzMmdwbTA4ZXkzb215cjY5YWp0ajkifQ.ARLXGi9WlLNpgDhN-FcKuA';
+
+  const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v10',
+    center: [-95, 38.5], // Longitude, Latitude
+    zoom: 3.5,
+    minZoom: 2,
+    maxZoom: 10
+  });
+
+  // Existing GeoServer raster tileset
+  const suitabilityLayer = {
+    id: "wms-suitability-layer",
+    type: "raster",
+    source: {
+      type: "raster",
+      tiles: [
+        "https://dreamy-darwin.66-175-239-115.plesk.page/geoserver/HSR_Raster/wms?service=WMS&version=1.1.0&request=GetMap&layers=mappingNY%3AHSR&bbox={bbox-epsg-3857}&width=768&height=481&srs=EPSG%3A3857&styles=&format=image/png&transparent=true"
+      ],
+      tileSize: 256
+    },
+    paint: {
+      "raster-hue-rotate": 0, // Initially, no hue rotation
+      "raster-saturation": 1, // Normal saturation
+      "raster-contrast": 1 // Normal contrast
+    }
+  };
+
+  map.on('load', function() {
+    map.addLayer(suitabilityLayer);
+  });
+
+  // Slider to control green range visibility
+  const slider = document.getElementById('greenRangeSlider');
+  slider.addEventListener('input', function(e) {
+    const greenIntensity = parseInt(e.target.value);
+
+    // Adjust hue rotation to isolate the green range
+    map.setPaintProperty('wms-suitability-layer', 'raster-hue-rotate', greenIntensity);
+
+    // Optionally, adjust saturation and contrast to enhance the green visibility
+    map.setPaintProperty('wms-suitability-layer', 'raster-saturation', greenIntensity / 50);
+    map.setPaintProperty('wms-suitability-layer', 'raster-contrast', 1 + (greenIntensity / 100));
+  });
+</script>
+
+</body>
+</html>
