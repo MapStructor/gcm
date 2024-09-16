@@ -9,124 +9,12 @@
 <style>
   body { margin: 0; padding: 0; }
   #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-  #radio-controls {
-  position: absolute;
-  bottom: 30px;  /* Moved to bottom left */
-  left: 10px;
-  z-index: 1;
-  background: white;
-  padding: 10px;
-  border-radius: 5px;
-}
-
-#legend {
-  background-color: white;
-  padding: 10px;
-  border-radius: 5px;
-  position: absolute;
-  top: 10px;  /* Moved to top left */
-  left: 10px;
-  z-index: 1;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-}
-
-
-  #legend h4 {
-    margin: 0 0 10px 0;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 5px;
-  }
-  .legend-color {
-    width: 20px;
-    height: 20px;
-    margin-right: 10px;
-    border: 1px solid #ccc;
-  }
-  .map-container {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 100%;
-  }
-  #info { 
-    position: absolute; 
-    top: 10px; 
-    right: 10px; 
-    z-index: 1; 
-    background: white; 
-    padding: 10px; 
-    border-radius: 5px; 
-    max-width: 300px; 
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2); 
-    overflow: auto;
-  }
-  .mapboxgl-ctrl-bottom-right {
-    right: 10px;
-    bottom: 10px;
-  }
 </style>
 </head>
 <body>
 
-<div id="radio-controls">
-  <label><input type="radio" name="basemap" value="satellite-streets" checked> Satellite with Streets</label><br>
-  <label><input type="radio" name="basemap" value="satellite"> Satellite</label><br>
-  <label><input type="radio" name="basemap" value="light"> Light</label><br>
-</div>
+<div id="map"></div>
 
-<div id="legend">
-  <h4>Suitability</h4>
-  <div class="legend-item">
-    <div class="legend-color" style="background-color: #d7191c;"></div>
-    <span>0-30%</span>
-  </div>
-  <div class="legend-item">
-    <div class="legend-color" style="background-color: #ff6c4f;"></div>
-    <span>30-69%</span>
-  </div>
-  <div class="legend-item">
-    <div class="legend-color" style="background-color: #8dff4b;"></div>
-    <span>69%</span>
-  </div>
-  <div class="legend-item">
-    <div class="legend-color" style="background-color: #4eb400;"></div>
-    <span>75%</span>
-  </div>
-  <div class="legend-item">
-    <div class="legend-color" style="background-color: #2b048f;"></div>
-    <span>100%</span>
-  </div>
-</div>
-
-<div id="info">
-    <h3>Making Way for the Cougar</h3>
-    <p>
-        Over 100 years ago, the cougar was heavily hunted across the U.S., leaving breeding populations only in the 
-        West and southern Florida. Cougars have slowly been making their way back east, but they need safe corridors 
-        to reach suitable habitats. This map replicates a model detailed in a paper, showing future habitats and the 
-        best corridors between them.
-    </p>
-    <p>
-        Currently, the habitat suitability model is visible. Swipe the vertical bar in the middle to compare the 
-        model with the satellite surface. Zoom in to see habitat in higher resolution. In the upper-left is the
-        legend. Under 69% is unsuitable for a cougar, and above 69-75% is suitable, depending on the model.
-    </p>
-    <p>
-        Paper: <em>"Potential Cougar Habitats and Dispersal Corridors in Eastern North America"</em><br>
-        <a href="https://drive.google.com/file/d/1HCp-qhUmSKAJSjI6kYUYtNIzHjXTgQhH/view" target="_blank">Read the full paper</a>
-    </p>
-</div>
-
-<div id="comparison-container" class="map-container">
-  <div id="before" class="map-container"></div>
-  <div id="after" class="map-container"></div>
-</div>
-
-<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-compare/v0.4.0/mapbox-gl-compare.js"></script>
-<link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-compare/v0.4.0/mapbox-gl-compare.css" type="text/css">
 <script>
   mapboxgl.accessToken = 'pk.eyJ1IjoiZ2xvYmFsd2VibWFwcGVyIiwiYSI6ImNsY3pzMmdwbTA4ZXkzb215cjY5YWp0ajkifQ.ARLXGi9WlLNpgDhN-FcKuA';
 
@@ -147,135 +35,24 @@
       paint: {},
   };
 
-  const beforeMap = new mapboxgl.Map({
-    container: 'before',
+  const map = new mapboxgl.Map({
+    container: 'map',
     style: 'mapbox://styles/globalwebmapper/cm0dca5i2008201qr0aczd4bz',  // Use Light Satellite
     center: [-95, 38.5], // Longitude, Latitude
     zoom: 3.5,
     minZoom: 2,  // Minimum zoom level
     maxZoom: 10, // Maximum zoom level
-    //maxBounds: [[-180, -85], [100, 85]], // Restrict panning to the Americas
     projection: 'mercator',  // Ensures the map is not displayed as a globe
     hash: true,  // Adds zoom level and lat/lon to URL
-});
-
-const afterMap = new mapboxgl.Map({
-    container: 'after',
-    style: 'mapbox://styles/globalwebmapper/cm0dca5i2008201qr0aczd4bz',  // Use Light Satellite
-    center: [-95, 38.5], // Longitude, Latitude
-    zoom: 3.5,
-    minZoom: 2,  // Minimum zoom level
-    maxZoom: 10, // Maximum zoom level
-    //maxBounds: [[-180, -85], [100, 85]], // Restrict panning to the Americas
-    projection: 'mercator',  // Ensures the map is not displayed as a globe
-    hash: true,  // Adds zoom level and lat/lon to URL
-});
-
-
+  });
 
   // Add zoom controls at the bottom right
   const navControl = new mapboxgl.NavigationControl();
-  beforeMap.addControl(navControl, 'bottom-right');
-  afterMap.addControl(navControl, 'bottom-right');
+  map.addControl(navControl, 'bottom-right');
 
-  // Add the WMS layer to the before map
-  beforeMap.on('load', function() {
-      beforeMap.addLayer(wmsLayerBefore);
-
-      // Add the very large lakes layer
-      beforeMap.addLayer({
-        id: "very_large_lakes",
-        type: "fill",
-        source: {
-          type: "vector",
-          url: "mapbox://globalwebmapper.29g66zz7",
-        },
-        "source-layer": "very_large_lakes-cwq7o1",
-        paint: {
-          "fill-color": "#284655", // Light blue color
-          "fill-opacity": 1, // Adjust opacity as needed
-        },
-      });
-
-      // Add the very large lakes lines layer, but make it invisible (no outlines)
-      beforeMap.addLayer({
-        id: "very_large_lakes_lines",
-        type: "line",
-        source: {
-          type: "vector",
-          url: "mapbox://globalwebmapper.29g66zz7",
-        },
-        "source-layer": "very_large_lakes-cwq7o1",
-        layout: {
-          visibility: "none", // No outlines
-        },
-      });
-  });
-
-  // Function to update map style
-  function updateMapStyle(style) {
-      beforeMap.setStyle(style);
-      afterMap.setStyle(style);
-
-      // Re-add the WMS layer and the large lakes layers after changing style
-      beforeMap.on('style.load', function() {
-          beforeMap.addLayer(wmsLayerBefore);
-
-          // Re-add the very large lakes layers
-          beforeMap.addLayer({
-            id: "very_large_lakes",
-            type: "fill",
-            source: {
-              type: "vector",
-              url: "mapbox://globalwebmapper.29g66zz7",
-            },
-            "source-layer": "very_large_lakes-cwq7o1",
-            paint: {
-              "fill-color": "#284655", // Light blue color
-              "fill-opacity": 1, // Adjust opacity as needed
-            },
-          });
-
-          beforeMap.addLayer({
-            id: "very_large_lakes_lines",
-            type: "line",
-            source: {
-              type: "vector",
-              url: "mapbox://globalwebmapper.29g66zz7",
-            },
-            "source-layer": "very_large_lakes-cwq7o1",
-            layout: {
-              visibility: "none", // No outlines
-            },
-          });
-      });
-  }
-
-  // Add event listeners to radio buttons
-  document.querySelectorAll('input[name="basemap"]').forEach(function(radio) {
-      radio.addEventListener('change', function() {
-          let selectedStyle;
-          switch (this.value) {
-              case 'satellite':
-                  selectedStyle = 'mapbox://styles/mapbox/satellite-v9';
-                  break;
-              case 'satellite-streets':
-                  selectedStyle = 'mapbox://styles/globalwebmapper/cm0dca5i2008201qr0aczd4bz';
-                  break;
-              case 'light':
-                  selectedStyle = 'mapbox://styles/globalwebmapper/cm0ddl059008401qrg02m2pul';
-                  break;
-          }
-          updateMapStyle(selectedStyle);
-      });
-  });
-
-  // A selector or reference to HTML element
-  const container = '#comparison-container';
-
-  const map = new mapboxgl.Compare(beforeMap, afterMap, container, {
-      // Set this to enable comparing two maps by mouse movement:
-      // mousemove: true
+  // Add the WMS layer to the map
+  map.on('load', function() {
+      map.addLayer(wmsLayerBefore);
   });
 </script>
 
