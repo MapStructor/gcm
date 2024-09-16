@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple WMS Viewer</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ol3/4.6.5/ol.css" type="text/css">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ol3/4.6.5/ol.js"></script>
+  <script>
+    // Create a new OpenLayers map
+    var map = new ol.Map({
+      target: 'map',
+      layers: [
+        new ol.layer.Tile({
+          source: new ol.source.OSM() // Base map layer
+        }),
+        new ol.layer.Image({
+          source: new ol.source.ImageWMS({
+            url: 'https://dreamy-darwin.66-175-239-115.plesk.page/geoserver/HSR_Raster/wms',
+            params: {
+              'LAYERS': 'HSR_Raster:HSR',
+              'TILED': true
+            },
+            ratio: 1,
+            serverType: 'geoserver'
+          })
+        })
+      ],
+      view: new ol.View({
+        center: ol.proj.fromLonLat([-100, 40]), // Center the view
+        zoom: 4 // Set the zoom level
+      })
+    });
+  </script>
+</body>
+</html>
