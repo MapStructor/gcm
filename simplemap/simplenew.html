@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WMS Layer - Human Modification</title>
+  <title>WMS Layer - Human Modification with Very Large Lakes</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ol3/4.6.5/ol.css" type="text/css">
   <style>
     body, html {
@@ -19,7 +19,7 @@
 </head>
 <body>
   <div id="map"></div>
-  
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ol3/4.6.5/ol.js"></script>
   <script>
     // Create a new OpenLayers map
@@ -38,6 +38,18 @@
             },
             ratio: 1,
             serverType: 'geoserver'
+          })
+        }),
+        // Adding the very large lakes vector tile layer from Mapbox
+        new ol.layer.VectorTile({
+          source: new ol.source.VectorTile({
+            format: new ol.format.MVT(),
+            url: 'https://api.mapbox.com/v4/globalwebmapper.29g66zz7/{z}/{x}/{y}.mvt?access_token=pk.eyJ1IjoiZ2xvYmFsd2VibWFwcGVyIiwiYSI6ImNsY3pzMmdwbTA4ZXkzb215cjY5YWp0ajkifQ.ARLXGi9WlLNpgDhN-FcKuA'
+          }),
+          style: new ol.style.Style({
+            fill: new ol.style.Fill({
+              color: 'rgba(40, 70, 85, 0.8)' // Blue color with some transparency
+            })
           })
         })
       ],
