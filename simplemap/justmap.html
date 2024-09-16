@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simple WMS Viewer</title>
+  <title>WMS Layer - Human Modification</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ol3/4.6.5/ol.css" type="text/css">
   <style>
     body, html {
@@ -31,9 +31,9 @@
         }),
         new ol.layer.Image({
           source: new ol.source.ImageWMS({
-            url: 'https://dreamy-darwin.66-175-239-115.plesk.page/geoserver/HSR_Raster/wms',
+            url: 'https://dreamy-darwin.66-175-239-115.plesk.page/geoserver/GCM/wms',
             params: {
-              'LAYERS': 'HSR_Raster:HSR',
+              'LAYERS': 'GCM:Human_Modification_01.23.2023_COG',
               'TILED': true
             },
             ratio: 1,
@@ -42,8 +42,8 @@
         })
       ],
       view: new ol.View({
-        center: ol.proj.fromLonLat([-100, 40]), // Center the view
-        zoom: 4 // Set the zoom level
+        center: ol.proj.fromLonLat([0, 0]), // Centering the map at the prime meridian
+        zoom: 2 // Adjust zoom as needed
       })
     });
   </script>
