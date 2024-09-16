@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WMS Layer - Human Modification with Very Large Lakes</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ol3/4.6.5/ol.css" type="text/css">
+  <title>WMS Layer - Human Modification + Lakes Highlight</title>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet">
   <style>
     body, html {
       margin: 0;
@@ -18,46 +18,107 @@
   </style>
 </head>
 <body>
-  <div id="map"></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ol3/4.6.5/ol.js"></script>
-  <script>
-    // Create a new OpenLayers map
-    var map = new ol.Map({
-      target: 'map',
-      layers: [
-        new ol.layer.Tile({
-          source: new ol.source.OSM() // Base map layer
-        }),
-        new ol.layer.Image({
-          source: new ol.source.ImageWMS({
-            url: 'https://dreamy-darwin.66-175-239-115.plesk.page/geoserver/GCM/wms',
-            params: {
-              'LAYERS': 'GCM:Human_Modification_01.23.2023_COG',
-              'TILED': true
-            },
-            ratio: 1,
-            serverType: 'geoserver'
-          })
-        }),
-        // Adding the very large lakes vector tile layer from Mapbox
-        new ol.layer.VectorTile({
-          source: new ol.source.VectorTile({
-            format: new ol.format.MVT(),
-            url: 'https://api.mapbox.com/v4/globalwebmapper.29g66zz7/{z}/{x}/{y}.mvt?access_token=pk.eyJ1IjoiZ2xvYmFsd2VibWFwcGVyIiwiYSI6ImNsY3pzMmdwbTA4ZXkzb215cjY5YWp0ajkifQ.ARLXGi9WlLNpgDhN-FcKuA'
-          }),
-          style: new ol.style.Style({
-            fill: new ol.style.Fill({
-              color: 'rgba(40, 70, 85, 0.8)' // Blue color with some transparency
-            })
-          })
-        })
+<div id="map"></div>
+
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
+<script>
+  mapboxgl.accessToken = 'pk.eyJ1IjoiZ2xvYmFsd2VibWFwcGVyIiwiYSI6ImNsY3pzMmdwbTA4ZXkzb215cjY5YWp0ajkifQ.ARLXGi9WlLNpgDhN-FcKuA';
+
+  const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v10', // Base style
+    center: [-95, 38.5], // Centering on the US
+    zoom: 3.5,
+    hash: true,  // Enable URL hash to save zoom and coordinates
+    minZoom: 2,
+    maxZoom: 10,
+    projection: 'mercator'
+  });
+
+  map.on('load', function() {
+    // Add the GeoServer WMS layer with dynamic bbox
+    map.addSource('geoserver-wms', {
+      type: 'raster',
+      tiles: [
+        'https://dreamy-darwin.66-175-239-115.plesk.page/geoserver/GCM/wms?service=WMS&version=1.1.0&request=GetMap&layers=GCM:Human_Modification_01.23.2023_COG&bbox={bbox-epsg-3857}&width=256&height=256&srs=EPSG:3857&styles=&format=image/png&transparent=true'
       ],
-      view: new ol.View({
-        center: ol.proj.fromLonLat([0, 0]), // Centering the map at the prime meridian
-        zoom: 2 // Adjust zoom as needed
-      })
+      tileSize: 256
     });
-  </script>
+
+    map.addLayer({
+      id: 'geoserver-wms-layer',
+      type: 'raster',
+      source: 'geoserver-wms',
+      paint: {}
+    });
+
+    // Adding the very large lakes vector layer from Mapbox
+    map.addSource('very-large-lakes', {
+      type: 'vector',
+      url: 'mapbox://globalwebmapper.29g66zz7'
+    });
+
+    // Add the fill layer for lakes
+    map.addLayer({
+      id: 'very-large-lakes-fill',
+      type: 'fill',
+      source: 'very-large-lakes',
+      'source-layer': 'very_large_lakes-cwq7o1',
+      paint: {
+        'fill-color': '#284655', // Default color for lakes
+        'fill-opacity': [
+          'case',
+          ['boolean', ['feature-state', 'hover'], false],
+          1, // Opaque when hovered
+          0.6 // Default opacity
+        ]
+      }
+    });
+
+    // Add the outline layer for lakes
+    map.addLayer({
+      id: 'very-large-lakes-outline',
+      type: 'line',
+      source: 'very-large-lakes',
+      'source-layer': 'very_large_lakes-cwq7o1',
+      paint: {
+        'line-color': '#000',
+        'line-width': 1
+      }
+    });
+
+    let hoveredLakeId = null;
+
+    // When hovering over lakes, highlight the feature
+    map.on('mousemove', 'very-large-lakes-fill', function(e) {
+      if (e.features.length > 0) {
+        if (hoveredLakeId !== null) {
+          map.setFeatureState(
+            { source: 'very-large-lakes', sourceLayer: 'very_large_lakes-cwq7o1', id: hoveredLakeId },
+            { hover: false }
+          );
+        }
+        hoveredLakeId = e.features[0].id;
+        map.setFeatureState(
+          { source: 'very-large-lakes', sourceLayer: 'very_large_lakes-cwq7o1', id: hoveredLakeId },
+          { hover: true }
+        );
+      }
+    });
+
+    // Reset the feature state when the mouse leaves the lake
+    map.on('mouseleave', 'very-large-lakes-fill', function() {
+      if (hoveredLakeId !== null) {
+        map.setFeatureState(
+          { source: 'very-large-lakes', sourceLayer: 'very_large_lakes-cwq7o1', id: hoveredLakeId },
+          { hover: false }
+        );
+      }
+      hoveredLakeId = null;
+    });
+  });
+</script>
+
 </body>
 </html>
