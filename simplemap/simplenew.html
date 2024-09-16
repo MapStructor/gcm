@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WMS Layer - Human Modification + Lakes Highlight</title>
+  <title>WMS Layer - Human Modification + Lakes Highlight with Popup</title>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet">
   <style>
     body, html {
@@ -89,8 +89,12 @@
     });
 
     let hoveredLakeId = null;
+    const popup = new mapboxgl.Popup({
+      closeButton: false,
+      closeOnClick: false
+    });
 
-    // When hovering over lakes, highlight the feature
+    // When hovering over lakes, highlight the feature and show a popup
     map.on('mousemove', 'very-large-lakes-fill', function(e) {
       if (e.features.length > 0) {
         if (hoveredLakeId !== null) {
@@ -104,10 +108,17 @@
           { source: 'very-large-lakes', sourceLayer: 'very_large_lakes-cwq7o1', id: hoveredLakeId },
           { hover: true }
         );
+
+        // Show popup with the lake name (assuming 'NAMEEN' field exists)
+        const lakeName = e.features[0].properties.NAMEEN || 'Unnamed Lake';
+        popup
+          .setLngLat(e.lngLat)
+          .setHTML(`<strong>${lakeName}</strong>`)
+          .addTo(map);
       }
     });
 
-    // Reset the feature state when the mouse leaves the lake
+    // Reset the feature state and remove popup when the mouse leaves the lake
     map.on('mouseleave', 'very-large-lakes-fill', function() {
       if (hoveredLakeId !== null) {
         map.setFeatureState(
@@ -116,6 +127,7 @@
         );
       }
       hoveredLakeId = null;
+      popup.remove();
     });
   });
 </script>
