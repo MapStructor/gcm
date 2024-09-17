@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WMS Layer - Human Modification + Lakes Highlight with Popup</title>
+  <title>WMS Layer - Human Modification + Lakes Highlight + Info Panel</title>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet">
   <style>
     body, html {
@@ -15,11 +15,32 @@
       width: 100%;
       height: 100%;
     }
+    /* Style for the info panel */
+    #info-panel {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.3);
+      font-family: Arial, sans-serif;
+      width: 200px;
+    }
+    #info-panel h3 {
+      margin: 0 0 10px 0;
+    }
   </style>
 </head>
 <body>
 
 <div id="map"></div>
+<!-- Info panel to display the COUNTRY and NAMEEN on click -->
+<div id="info-panel" style="display:none;">
+  <h3>Lake Information</h3>
+  <p><strong>Country:</strong> <span id="country-info">N/A</span></p>
+  <p><strong>Lake Name:</strong> <span id="name-info">N/A</span></p>
+</div>
 
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
 <script>
@@ -128,6 +149,19 @@
       }
       hoveredLakeId = null;
       popup.remove();
+    });
+
+    // Click event to show lake information in the upper-right panel
+    map.on('click', 'very-large-lakes-fill', function(e) {
+      const lakeName = e.features[0].properties.NAMEEN || 'Unnamed Lake';
+      const country = e.features[0].properties.COUNTRY || 'Unknown Country';
+
+      // Display the lake information in the panel
+      document.getElementById('name-info').textContent = lakeName;
+      document.getElementById('country-info').textContent = country;
+
+      // Show the panel
+      document.getElementById('info-panel').style.display = 'block';
     });
   });
 </script>
